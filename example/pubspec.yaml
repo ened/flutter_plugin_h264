@@ -1,0 +1,24 @@
+name: h264_example
+description: Demonstrates how to use the h264 plugin.
+publish_to: 'none'
+
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
+dependencies:
+  path_provider: any
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  h264:
+    path: ../
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/samples/

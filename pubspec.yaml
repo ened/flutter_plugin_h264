@@ -1,0 +1,17 @@
+name: h264
+description: Decode single H264 or H265 frames into images.
+version: 0.0.1
+author: Sebastian Roth <sebastian.roth@gmail.com>
+homepage:
+
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    androidPackage: asia.ivity.h264
+    pluginClass: H264Plugin
