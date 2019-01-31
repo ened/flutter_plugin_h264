@@ -55,13 +55,16 @@ public class H264Plugin implements MethodCallHandler {
 
       if (decode != null) {
         final File target = new File((String) params.get("target"));
-        decode.compress(CompressFormat.JPEG, 80, new FileOutputStream(target));
+        FileOutputStream fos = new FileOutputStream(target);
+        decode.compress(CompressFormat.JPEG, 80, fos);
+        fos.close();
+
         result.success(target.getAbsolutePath());
       } else {
         result.error("h264", "", null);
       }
     } catch (Exception e) {
-      result.error("h264", "", e);
+      result.error("h264", e.getMessage(), null);
     }
   }
 }
