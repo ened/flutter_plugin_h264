@@ -1,3 +1,7 @@
+## 0.0.3
+
+* iOS Support
+
 ## 0.0.2
 
 * Migrated to AndroidX

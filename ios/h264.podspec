@@ -3,8 +3,8 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'h264'
-  s.version          = '0.0.1'
-  s.summary          = 'A new flutter plugin project.'
+  s.version          = '0.0.3'
+  s.summary          = 'Convert single h264/h265 frames to images.'
   s.description      = <<-DESC
 A new flutter plugin project.
                        DESC
