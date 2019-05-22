@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'h264'
-  s.version          = '0.0.3'
+  s.version          = '0.0.4'
   s.summary          = 'Convert single h264/h265 frames to images.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -17,6 +17,6 @@ A new flutter plugin project.
   s.dependency 'Flutter'
 
   s.ios.deployment_target = '11.3'
-  s.swift_version = '4.2'
+  s.swift_version = '5'
 end
 
