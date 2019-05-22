@@ -1,6 +1,6 @@
 name: h264
 description: Decode single H264 or H265 frames into images.
-version: 0.0.3
+version: 0.0.4
 author: Sebastian Roth <sebastian.roth@gmail.com>
 homepage:
 

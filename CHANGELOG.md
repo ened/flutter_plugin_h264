@@ -1,3 +1,8 @@
+## 0.0.4
+
+* Android: Ensure to return results on the main thread.
+* Android: Upgrade gradle infrastructure.
+
 ## 0.0.3
 
 * iOS Support
