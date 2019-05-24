@@ -1,3 +1,7 @@
+## 0.1.0
+
+* Android: Checked the decoding compatibility with 10 different phones starting on Android 5.1+
+
 ## 0.0.4
 
 * Android: Ensure to return results on the main thread.
