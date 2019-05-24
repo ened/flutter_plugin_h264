@@ -45,9 +45,19 @@ class _DecodingDialogState extends State<DecodingDialog> {
           future: _loadAndDecode(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Text(
-                "Decoding failed.",
-                style: TextStyle(color: Colors.red),
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    "Decoding failed:",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "${snapshot.error}",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ],
               );
             }
             if (!snapshot.hasData) {
