@@ -1,6 +1,6 @@
 name: h264
 description: Decode single H264 or H265 frames into images.
-version: 0.1.0
+version: 0.1.1
 author: Sebastian Roth <sebastian.roth@gmail.com>
 homepage: https://github.com/ened/flutter_plugin_h264
 

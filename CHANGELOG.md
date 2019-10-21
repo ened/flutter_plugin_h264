@@ -1,3 +1,8 @@
+## 0.1.1
+
+* iOS: Define clang module, so that plugin users can remove use_frameworks! from their Podfile
+* iOS: Update example project files
+
 ## 0.1.0
 
 * Android: Checked the decoding compatibility with 10 different phones starting on Android 5.1+
