@@ -1,13 +1,14 @@
 package asia.ivity.h264example;
 
 import android.os.Bundle;
+import asia.ivity.h264.H264Plugin;
 import io.flutter.app.FlutterActivity;
-import io.flutter.plugins.GeneratedPluginRegistrant;
 
-public class MainActivity extends FlutterActivity {
+public class EmbeddingV1Activity extends FlutterActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    GeneratedPluginRegistrant.registerWith(this);
+
+    H264Plugin.registerWith(registrarFor("asia.ivity.h264.H264Plugin"));
   }
 }
