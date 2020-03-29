@@ -1,3 +1,8 @@
+## 0.2.0
+
+* Android: Embedding V2 compatibility
+* E2E testing capabilities added
+
 ## 0.1.0
 
 * Android: Checked the decoding compatibility with 10 different phones starting on Android 5.1+
