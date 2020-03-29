@@ -7,6 +7,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+dev_dependencies: 
+  e2e: ^0.4.0
+  flutter_driver:
+    sdk: flutter
+
 flutter:
   plugin:
     platforms:

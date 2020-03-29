@@ -1,6 +1,12 @@
 #import "H264Plugin.h"
-#import <h264/h264-Swift.h>
 #import <Foundation/Foundation.h>
+
+#if __has_include(<h264/h264-Swift.h>)
+#import <h264/h264-Swift.h>
+#else
+#import "h264-Swift.h"
+#endif
+
 
 @interface H264Plugin() {
     dispatch_queue_t queue;
