@@ -136,7 +136,7 @@ public class H264Reader: NSObject {
             
             // CMVideoFormatDescriptionCreateFromH264ParameterSets parameters
             // let parameterSetCount: Int = 2
-            var parameterSetPointers: UnsafePointer<UnsafePointer<UInt8>>! = nil
+//            var parameterSetPointers: UnsafePointer<UnsafePointer<UInt8>>! = nil
             
             let NALUnitHeaderLength: Int32 = 4
             
@@ -148,23 +148,28 @@ public class H264Reader: NSObject {
             
             // extract pps data
             ppsByteArray = Array(rawPPS[Int(NALUnitHeaderLength)..<rawPPS.count])
-            
-            let pointerSPS = UnsafePointer<UInt8>(spsByteArray)
-            let pointerPPS = UnsafePointer<UInt8>(ppsByteArray)
-            
-            let dataParamArray = [pointerSPS, pointerPPS]
-            parameterSetPointers = UnsafePointer<UnsafePointer<UInt8>>(dataParamArray)
-            
+
             let parameterSetSizes: [Int] = [spsByteArray.count, ppsByteArray.count]
+
+            let osStatus = withUnsafePointer(to: &spsByteArray[0]) { pointerSPS -> OSStatus in
+                return withUnsafePointer(to: &ppsByteArray[0]) { pointerPPS -> OSStatus in
+                    var dataParamArray = [pointerSPS, pointerPPS]
+                    return withUnsafePointer(to: &dataParamArray[0]) { parameterSetPointers in
+                        return CMVideoFormatDescriptionCreateFromH264ParameterSets(
+                            allocator: kCFAllocatorDefault,
+                            parameterSetCount: 2,
+                            parameterSetPointers: parameterSetPointers,
+                            parameterSetSizes: parameterSetSizes,
+                            nalUnitHeaderLength: 4,
+                            formatDescriptionOut: &formatDescription
+                        )
+                    }
+                }
+            }
             
-            CMVideoFormatDescriptionCreateFromH264ParameterSets(
-                allocator: kCFAllocatorDefault,
-                parameterSetCount: 2,
-                parameterSetPointers: parameterSetPointers,
-                parameterSetSizes: parameterSetSizes,
-                nalUnitHeaderLength: 4,
-                formatDescriptionOut: &formatDescription
-            )
+            guard osStatus == 0 else {
+                throw H264Errors.osError(osStatus)
+            }
         }
         
         guard formatDescription != nil else {
