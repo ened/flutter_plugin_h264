@@ -2,6 +2,7 @@
 
 * iOS: Define clang module, so that plugin users can remove use_frameworks! from their Podfile
 * iOS: Update example project files
+* iOS: Remove some compilation warnings
 
 ## 0.2.0
 
