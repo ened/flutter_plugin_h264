@@ -133,11 +133,7 @@ public class H264Reader: NSObject {
             // sps and pps variables
             var spsByteArray: [UInt8] = []
             var ppsByteArray: [UInt8] = []
-            
-            // CMVideoFormatDescriptionCreateFromH264ParameterSets parameters
-            // let parameterSetCount: Int = 2
-//            var parameterSetPointers: UnsafePointer<UnsafePointer<UInt8>>! = nil
-            
+                        
             let NALUnitHeaderLength: Int32 = 4
             
             let rawSPS: [UInt8] = Array(data.bytes[sps.lowerBound...sps.upperBound])
@@ -157,10 +153,10 @@ public class H264Reader: NSObject {
                     return withUnsafePointer(to: &dataParamArray[0]) { parameterSetPointers in
                         return CMVideoFormatDescriptionCreateFromH264ParameterSets(
                             allocator: kCFAllocatorDefault,
-                            parameterSetCount: 2,
+                            parameterSetCount: parameterSetSizes.count,
                             parameterSetPointers: parameterSetPointers,
                             parameterSetSizes: parameterSetSizes,
-                            nalUnitHeaderLength: 4,
+                            nalUnitHeaderLength: NALUnitHeaderLength,
                             formatDescriptionOut: &formatDescription
                         )
                     }
