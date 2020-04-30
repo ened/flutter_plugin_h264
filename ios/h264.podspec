@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'h264'
-  s.version          = '0.1.0'
+  s.version          = '0.2.0'
   s.summary          = 'Convert single h264/h265 frames to images.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -17,11 +17,7 @@ A new flutter plugin project.
   s.dependency 'Flutter'
 
   s.ios.deployment_target = '11.3'
-
-  swift_versions = ['4.0', '4.2', '5.0', '5.1']
-  swift_versions << Pod::Validator::DEFAULT_SWIFT_VERSION if Pod::Validator.const_defined? "DEFAULT_SWIFT_VERSION"
-  s.swift_versions = swift_versions
-
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
+  s.swift_version = '5.1'
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
 end
 

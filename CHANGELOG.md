@@ -1,7 +1,12 @@
-## 0.1.1
+## 0.2.1
 
 * iOS: Define clang module, so that plugin users can remove use_frameworks! from their Podfile
 * iOS: Update example project files
+
+## 0.2.0
+
+* Android: Embedding V2 compatibility
+* E2E testing capabilities added
 
 ## 0.1.0
 
