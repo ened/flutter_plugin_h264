@@ -52,7 +52,7 @@
         }
         [reader convertWithTarget:target error:&error];
         if (error) {
-            result([FlutterError errorWithCode:@"h264" message:nil details:nil]);
+            result([FlutterError errorWithCode:@"h264" message:[error localizedDescription] details:nil]);
         } else {
             result(target.absoluteString);
         }

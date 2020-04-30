@@ -258,7 +258,7 @@ public class H264Reader: NSObject {
             }
             
             guard let theImage = image else {
-                print ("Image could not be created, fuck")
+                print ("Created image is nil")
                 
                 throw H264Errors.otherProblem
             }
@@ -267,7 +267,7 @@ public class H264Reader: NSObject {
                 try theImage.jpegData(compressionQuality: 100)?.write(to: URL(fileURLWithPath: target.absoluteString))
                 //                try theImage.jpegData(compressionQuality: 100)?.write(to: target)
             } catch {
-                print("fuck: \(error)")
+                print("Other error: \(error)")
                 
                 throw H264Errors.otherProblem
             }
