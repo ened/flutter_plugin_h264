@@ -1,0 +1,40 @@
+PODS:
+  - e2e (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - h264 (0.2.1):
+    - Flutter
+  - path_provider (0.0.1):
+    - Flutter
+  - path_provider_macos (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - e2e (from `.symlinks/plugins/e2e/ios`)
+  - Flutter (from `Flutter`)
+  - h264 (from `.symlinks/plugins/h264/ios`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - path_provider_macos (from `.symlinks/plugins/path_provider_macos/ios`)
+
+EXTERNAL SOURCES:
+  e2e:
+    :path: ".symlinks/plugins/e2e/ios"
+  Flutter:
+    :path: Flutter
+  h264:
+    :path: ".symlinks/plugins/h264/ios"
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
+  path_provider_macos:
+    :path: ".symlinks/plugins/path_provider_macos/ios"
+
+SPEC CHECKSUMS:
+  e2e: d0c9f8c832b4cc7ab386d0c0f0af67fe5ac0c3bd
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  h264: 84566cc398226e268262dd890357094c646bc286
+  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
+  path_provider_macos: f760a3c5b04357c380e2fddb6f9db6f3015897e0
+
+PODFILE CHECKSUM: 0129210f9fac76fdc6e7e326410a7029a68e25a1
+
+COCOAPODS: 1.9.1
