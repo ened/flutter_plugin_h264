@@ -57,13 +57,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.4"
-  e2e:
-    dependency: "direct dev"
-    description:
-      name: e2e
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.4.2"
   file:
     dependency: transitive
     description:
