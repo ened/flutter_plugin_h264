@@ -10,6 +10,7 @@
 
 @interface H264Plugin() {
     dispatch_queue_t queue;
+    H264Reader *reader;
 }
 
 @end
@@ -26,6 +27,7 @@
 - (instancetype)init {
     if (self = [super init]) {
         queue = dispatch_queue_create("h264 decoder", nil);
+        reader = [[H264Reader alloc] init];
     }
     
     return self;
@@ -41,17 +43,17 @@
 }
 
 - (void)handleDecode:(NSDictionary*)params result:(FlutterResult)result {
-    dispatch_async(queue, ^{
+//    dispatch_async(queue, ^{
         NSURL *source = [NSURL URLWithString:params[@"source"]];
         NSURL *target = [NSURL URLWithString:params[@"target"]];
         NSError *error;
-        H264Reader *reader = [[H264Reader alloc] initWithUrl:source error:&error];
+        [self->reader loadWithUrl:source error:&error];
         if (error) {
             result([FlutterError errorWithCode:@"h264" message:nil details:nil]);
             return;
         }
         if (@available(iOS 9.0, *)) {
-            [reader convertWithTarget:target error:&error];
+            [self->reader convertWithTarget:target error:&error];
         } else {
             result([FlutterError errorWithCode:@"h264" message:@"unavailable" details:nil]);
         }
@@ -60,7 +62,7 @@
         } else {
             result(target.absoluteString);
         }
-    });
+//    });
 
 }
 

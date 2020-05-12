@@ -68,11 +68,20 @@ public class H264Reader: NSObject {
     
     var session: VTDecompressionSession?
     
-    let data: Data
+    var data: Data! = nil
     
     @objc
-    public init(url: URL) throws {
+    public func load(url: URL) throws {
         let tmp = FileManager.default.contents(atPath: url.absoluteString)
+        if tmp == nil {
+            throw H264Errors.fileUnknown
+        }
+        self.data = tmp!
+    }
+    
+    @objc
+    public func load(path: String) throws {
+        let tmp = FileManager.default.contents(atPath: path)
         if tmp == nil {
             throw H264Errors.fileUnknown
         }
@@ -88,12 +97,143 @@ public class H264Reader: NSObject {
                 self.session = nil
             }
         }
-
+        
         try self.doConvert(target: target)
     }
     
     @available(iOS 9.0, *)
     fileprivate func doConvert(target: URL) throws {
+        
+        guard let ranges = detectRanges() else {
+            throw H264Errors.fileUnknown
+        }
+        
+        try detectFormat(sps: ranges.sps, pps: ranges.pps)
+        
+        guard formatDescription != nil else {
+            throw H264Errors.unknownFormat
+        }
+        
+        let idr = ranges.idr
+        var rawIdr: [UInt8] = Array(data.bytes[idr.lowerBound...idr.upperBound-1])
+        let length = UInt32(rawIdr.count - 4)
+        var convertedNumber = length.bigEndian
+        
+        let lengthData = Data(bytes: &convertedNumber, count: 4)
+        for (index, value) in lengthData.bytes.enumerated() {
+            rawIdr[index] = value
+        }
+        
+        var status: OSStatus = 0
+        status = CMBlockBufferCreateWithMemoryBlock(
+            allocator: kCFAllocatorDefault,
+            memoryBlock: &rawIdr,
+            blockLength: rawIdr.count,
+            blockAllocator: kCFAllocatorDefault,
+            customBlockSource: nil,
+            offsetToData: 0,
+            dataLength: rawIdr.count,
+            flags: 0,
+            blockBufferOut: blockBuffer)
+        
+        guard status == 0 else {
+            print ("(CMBlockBufferCreateWithMemoryBlock) FAIL: \(status)")
+            
+            throw H264Errors.osError(status)
+        }
+        
+        var sampleSize = rawIdr.count
+        
+        status = CMSampleBufferCreate(
+            allocator: kCFAllocatorDefault,
+            dataBuffer: blockBuffer[0],
+            dataReady: true, makeDataReadyCallback: nil, refcon: nil, formatDescription: formatDescription!,
+            sampleCount: 1, sampleTimingEntryCount: 0, sampleTimingArray: nil, sampleSizeEntryCount: 1,
+            sampleSizeArray: &sampleSize,
+            sampleBufferOut: sampleBuffer
+        )
+        guard status == 0 else {
+            print ("(CMSampleBufferCreate) FAIL: \(status)")
+            
+            throw H264Errors.osError(status)
+        }
+        
+        status = VTDecompressionSessionCreate(allocator: kCFAllocatorDefault, formatDescription: formatDescription!, decoderSpecification: nil, imageBufferAttributes: nil, outputCallback: nil, decompressionSessionOut: &session)
+        guard status == 0 else {
+            print ("(VTDecompressionSessionCreate) FAIL: \(status)")
+            
+            throw H264Errors.osError(status)
+        }
+        
+        var image: UIImage?
+        
+        status = VTDecompressionSessionDecodeFrame(session!, sampleBuffer: sampleBuffer[0]!, flags: [._EnableAsynchronousDecompression], infoFlagsOut: nil) { (status, flags, buffer, presentationTimeStamp, presentationDuration) in
+            //                print ("status: \(status)")
+            //                print ("a sample: \(buffer)")
+            
+            if let buffer = buffer {
+                //                    print ("buffer: \(buffer)")
+                let ciUiImage = UIImage(ciImage: CIImage(cvImageBuffer: buffer))
+                UIGraphicsBeginImageContext(ciUiImage.size)
+                ciUiImage.draw(in: CGRect(origin: .zero, size: ciUiImage.size))
+                //                    print ("image to be sent: \(image)")
+                image = UIGraphicsGetImageFromCurrentImageContext()
+                UIGraphicsEndImageContext()
+                //                    print("sent onNext!")
+            } else {
+                print ("(VTDecompressionSessionDecodeFrameWithOutputHandler) handler: FAIL: \(status)")
+                //                    throw H264Errors.osError(status)
+            }
+        }
+        guard status == 0 else {
+            print ("(VTDecompressionSessionDecodeFrameWithOutputHandler) FAIL: \(status)")
+            
+            throw H264Errors.osError(status)
+        }
+        
+        status = VTDecompressionSessionWaitForAsynchronousFrames(session!)
+        guard status == 0 else {
+            print ("(VTDecompressionSessionWaitForAsynchronousFrames) FAIL: \(status)")
+            
+            throw H264Errors.osError(status)
+        }
+        
+        guard let theImage = image else {
+            print ("Created image is nil")
+            
+            throw H264Errors.otherProblem
+        }
+        
+        do {
+            try theImage.jpegData(compressionQuality: 100)?.write(to: URL(fileURLWithPath: target.absoluteString))
+            //                try theImage.jpegData(compressionQuality: 100)?.write(to: target)
+        } catch {
+            print("Other error: \(error)")
+            
+            throw H264Errors.otherProblem
+        }
+        
+    }
+    
+    fileprivate func nextNal(_ frame: [UInt8], offset: Int) -> Int {
+        var i = offset
+        
+        while i < (frame.count - 3) {
+            if frame[i] == 0x00 && frame[i+1] == 0x00 && frame[i+2] == 0x00 && frame[i+3] == 0x01 {
+                return i
+            } else {
+                i = i + 1
+            }
+        }
+        
+        return -1
+    }
+    
+    fileprivate func naluType(_ byte : UInt8) -> UInt8 {
+        return byte & 0x1F
+    }
+    
+    fileprivate func detectRanges() -> (sps: NSRange, pps: NSRange, idr: NSRange)? {
         var spsStartCodeIndex = -1
         var spsRange: NSRange?
         
@@ -131,170 +271,50 @@ public class H264Reader: NSObject {
             }
         }
         
-        if let sps = spsRange, let pps = ppsRange {
-            // sps and pps variables
-            var spsByteArray: [UInt8] = []
-            var ppsByteArray: [UInt8] = []
-                        
-            let NALUnitHeaderLength: Int32 = 4
-            
-            let rawSPS: [UInt8] = Array(data.bytes[sps.lowerBound...sps.upperBound])
-            let rawPPS: [UInt8] = Array(data.bytes[pps.lowerBound...pps.upperBound])
-            
-            // extract sps data
-            spsByteArray = Array(rawSPS[Int(NALUnitHeaderLength)..<rawSPS.count])
-            
-            // extract pps data
-            ppsByteArray = Array(rawPPS[Int(NALUnitHeaderLength)..<rawPPS.count])
-
-            let parameterSetSizes: [Int] = [spsByteArray.count, ppsByteArray.count]
-
-            let osStatus = withUnsafePointer(to: &spsByteArray[0]) { pointerSPS -> OSStatus in
-                return withUnsafePointer(to: &ppsByteArray[0]) { pointerPPS -> OSStatus in
-                    var dataParamArray = [pointerSPS, pointerPPS]
-                    return withUnsafePointer(to: &dataParamArray[0]) { parameterSetPointers in
-                        return CMVideoFormatDescriptionCreateFromH264ParameterSets(
-                            allocator: kCFAllocatorDefault,
-                            parameterSetCount: parameterSetSizes.count,
-                            parameterSetPointers: parameterSetPointers,
-                            parameterSetSizes: parameterSetSizes,
-                            nalUnitHeaderLength: NALUnitHeaderLength,
-                            formatDescriptionOut: &formatDescription
-                        )
-                    }
-                }
-            }
-            
-            guard osStatus == 0 else {
-                throw H264Errors.osError(osStatus)
-            }
-        }
-        
-        guard formatDescription != nil else {
-            throw H264Errors.unknownFormat
-        }
-        
-        
-        if let idr = idrRange {
-            var rawIdr: [UInt8] = Array(data.bytes[idr.lowerBound...idr.upperBound-1])
-            let length = UInt32(rawIdr.count - 4)
-            var convertedNumber = length.bigEndian
-            
-            let lengthData = Data(bytes: &convertedNumber, count: 4)
-            for (index, value) in lengthData.bytes.enumerated() {
-                rawIdr[index] = value
-            }
-            
-            var status: OSStatus = 0
-            status = CMBlockBufferCreateWithMemoryBlock(
-                allocator: kCFAllocatorDefault,
-                memoryBlock: &rawIdr,
-                blockLength: rawIdr.count,
-                blockAllocator: kCFAllocatorDefault,
-                customBlockSource: nil,
-                offsetToData: 0,
-                dataLength: rawIdr.count,
-                flags: 0,
-                blockBufferOut: blockBuffer)
-            
-            guard status == 0 else {
-                print ("(CMBlockBufferCreateWithMemoryBlock) FAIL: \(status)")
-                
-                throw H264Errors.osError(status)
-            }
-            
-            var sampleSize = rawIdr.count
-            
-            status = CMSampleBufferCreate(
-                allocator: kCFAllocatorDefault,
-                dataBuffer: blockBuffer[0],
-                dataReady: true, makeDataReadyCallback: nil, refcon: nil, formatDescription: formatDescription!,
-                sampleCount: 1, sampleTimingEntryCount: 0, sampleTimingArray: nil, sampleSizeEntryCount: 1,
-                sampleSizeArray: &sampleSize,
-                sampleBufferOut: sampleBuffer
-            )
-            guard status == 0 else {
-                print ("(CMSampleBufferCreate) FAIL: \(status)")
-                
-                throw H264Errors.osError(status)
-            }
-            
-            status = VTDecompressionSessionCreate(allocator: kCFAllocatorDefault, formatDescription: formatDescription!, decoderSpecification: nil, imageBufferAttributes: nil, outputCallback: nil, decompressionSessionOut: &session)
-            guard status == 0 else {
-                print ("(VTDecompressionSessionCreate) FAIL: \(status)")
-                
-                throw H264Errors.osError(status)
-            }
-            
-            var image: UIImage?
-            
-            status = VTDecompressionSessionDecodeFrame(session!, sampleBuffer: sampleBuffer[0]!, flags: [._EnableAsynchronousDecompression], infoFlagsOut: nil) { (status, flags, buffer, presentationTimeStamp, presentationDuration) in
-                //                print ("status: \(status)")
-                //                print ("a sample: \(buffer)")
-                
-                if let buffer = buffer {
-                    //                    print ("buffer: \(buffer)")
-                    let ciUiImage = UIImage(ciImage: CIImage(cvImageBuffer: buffer))
-                    UIGraphicsBeginImageContext(ciUiImage.size)
-                    ciUiImage.draw(in: CGRect(origin: .zero, size: ciUiImage.size))
-                    //                    print ("image to be sent: \(image)")
-                    image = UIGraphicsGetImageFromCurrentImageContext()
-                    UIGraphicsEndImageContext()
-                    //                    print("sent onNext!")
-                } else {
-                    print ("(VTDecompressionSessionDecodeFrameWithOutputHandler) handler: FAIL: \(status)")
-                    //                    throw H264Errors.osError(status)
-                }
-            }
-            guard status == 0 else {
-                print ("(VTDecompressionSessionDecodeFrameWithOutputHandler) FAIL: \(status)")
-                
-                throw H264Errors.osError(status)
-            }
-            
-            status = VTDecompressionSessionWaitForAsynchronousFrames(session!)
-            guard status == 0 else {
-                print ("(VTDecompressionSessionWaitForAsynchronousFrames) FAIL: \(status)")
-                
-                throw H264Errors.osError(status)
-            }
-            
-            guard let theImage = image else {
-                print ("Created image is nil")
-                
-                throw H264Errors.otherProblem
-            }
-            
-            do {
-                try theImage.jpegData(compressionQuality: 100)?.write(to: URL(fileURLWithPath: target.absoluteString))
-                //                try theImage.jpegData(compressionQuality: 100)?.write(to: target)
-            } catch {
-                print("Other error: \(error)")
-                
-                throw H264Errors.otherProblem
-            }
-            
-            //            return image
+        if let sps = spsRange, let pps = ppsRange, let idr = idrRange {
+            return (sps, pps, idr)
         } else {
-            throw H264Errors.otherProblem
+            return nil
         }
     }
     
-    fileprivate func nextNal(_ frame: [UInt8], offset: Int) -> Int {
-        var i = offset
+    fileprivate func detectFormat(sps: NSRange, pps: NSRange) throws  {
+        // sps and pps variables
+        var spsByteArray: [UInt8] = []
+        var ppsByteArray: [UInt8] = []
         
-        while i < (frame.count - 3) {
-            if frame[i] == 0x00 && frame[i+1] == 0x00 && frame[i+2] == 0x00 && frame[i+3] == 0x01 {
-                return i
-            } else {
-                i = i + 1
+        let NALUnitHeaderLength: Int32 = 4
+        
+        let rawSPS: [UInt8] = Array(data.bytes[sps.lowerBound...sps.upperBound])
+        let rawPPS: [UInt8] = Array(data.bytes[pps.lowerBound...pps.upperBound])
+        
+        // extract sps data
+        spsByteArray = Array(rawSPS[Int(NALUnitHeaderLength)..<rawSPS.count])
+        
+        // extract pps data
+        ppsByteArray = Array(rawPPS[Int(NALUnitHeaderLength)..<rawPPS.count])
+        
+        let parameterSetSizes: [Int] = [spsByteArray.count, ppsByteArray.count]
+        
+        let osStatus = withUnsafePointer(to: &spsByteArray[0]) { pointerSPS -> OSStatus in
+            return withUnsafePointer(to: &ppsByteArray[0]) { pointerPPS -> OSStatus in
+                var dataParamArray = [pointerSPS, pointerPPS]
+                return withUnsafePointer(to: &dataParamArray[0]) { parameterSetPointers in
+                    return CMVideoFormatDescriptionCreateFromH264ParameterSets(
+                        allocator: kCFAllocatorDefault,
+                        parameterSetCount: parameterSetSizes.count,
+                        parameterSetPointers: parameterSetPointers,
+                        parameterSetSizes: parameterSetSizes,
+                        nalUnitHeaderLength: NALUnitHeaderLength,
+                        formatDescriptionOut: &formatDescription
+                    )
+                }
             }
         }
         
-        return -1
+        guard osStatus == 0 else {
+            throw H264Errors.osError(osStatus)
+        }
     }
     
-    fileprivate func naluType(_ byte : UInt8) -> UInt8 {
-        return byte & 0x1F
-    }
 }
