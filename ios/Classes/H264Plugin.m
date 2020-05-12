@@ -50,7 +50,11 @@
             result([FlutterError errorWithCode:@"h264" message:nil details:nil]);
             return;
         }
-        [reader convertWithTarget:target error:&error];
+        if (@available(iOS 9.0, *)) {
+            [reader convertWithTarget:target error:&error];
+        } else {
+            result([FlutterError errorWithCode:@"h264" message:@"unavailable" details:nil]);
+        }
         if (error) {
             result([FlutterError errorWithCode:@"h264" message:[error localizedDescription] details:nil]);
         } else {

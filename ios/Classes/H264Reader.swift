@@ -79,6 +79,7 @@ public class H264Reader: NSObject {
         self.data = tmp!
     }
     
+    @available(iOS 9.0, *)
     @objc
     public func convert(target: URL) throws {
         defer {
@@ -91,6 +92,7 @@ public class H264Reader: NSObject {
         try self.doConvert(target: target)
     }
     
+    @available(iOS 9.0, *)
     fileprivate func doConvert(target: URL) throws {
         var spsStartCodeIndex = -1
         var spsRange: NSRange?
