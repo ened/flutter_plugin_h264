@@ -1,3 +1,7 @@
+## 0.3.0
+
+* Adds null-safety, built the project using Flutter 2.1.0-12.2.pre
+
 ## 0.2.1
 
 * iOS: Define clang module, so that plugin users can remove use_frameworks! from their Podfile
