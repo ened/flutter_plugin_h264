@@ -9,7 +9,10 @@ import 'package:path_provider/path_provider.dart';
 class DecodingDialog extends StatefulWidget {
   final Sample asset;
 
-  const DecodingDialog({Key key, this.asset}) : super(key: key);
+  const DecodingDialog({
+    Key? key,
+    required this.asset,
+  }) : super(key: key);
 
   @override
   _DecodingDialogState createState() => _DecodingDialogState();
@@ -41,7 +44,7 @@ class _DecodingDialogState extends State<DecodingDialog> {
       title: Text(widget.asset.name),
       content: AspectRatio(
         aspectRatio: widget.asset.width / widget.asset.height,
-        child: FutureBuilder(
+        child: FutureBuilder<String>(
           future: _loadAndDecode(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -64,7 +67,7 @@ class _DecodingDialogState extends State<DecodingDialog> {
               return Center(child: CircularProgressIndicator());
             }
 
-            return Image.file(File(snapshot.data));
+            return Image.file(File(snapshot.data!));
           },
         ),
       ),

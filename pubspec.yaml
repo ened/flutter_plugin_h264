@@ -1,5 +1,5 @@
 name: h264
-description: Decode single H264 or H265 frames into images.
+description: Decode single H264 or H265 keyframes frames into images.
 version: 0.2.1
 homepage: https://github.com/ened/flutter_plugin_h264
 
@@ -21,6 +21,6 @@ flutter:
         pluginClass: H264Plugin
     
 environment:
-  sdk: ">=2.3.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.12.13+hotfix.6 <2.0.0"
        

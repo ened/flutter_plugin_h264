@@ -3,22 +3,25 @@ description: Demonstrates how to use the h264 plugin.
 publish_to: 'none'
 
 dependencies:
-  path_provider: ^1.6.7
+  path_provider: ^2.0.1
   flutter:
     sdk: flutter
 
 dev_dependencies:
-  e2e: ^0.4.2
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
 
   h264:
     path: ../
-  flutter_driver:
-    sdk: flutter
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/samples/
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+  flutter: ">=1.12.13+hotfix.6 <2.0.0"
