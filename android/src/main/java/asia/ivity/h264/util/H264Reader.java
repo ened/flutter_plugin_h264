@@ -90,16 +90,16 @@ public class H264Reader {
 
           byte[] buffer = new byte[(int) length];
           int read;
+
           if ((read = is.read(buffer)) != -1) {
             Log.d(TAG, "Data put into buffer: " + read + " bytes");
             inputBuffer.put(buffer, 0, read);
 
             codec.queueInputBuffer(inputBufferId, 0, read, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-            break;
           } else {
             Log.d(TAG, "Reached the end");
-            break;
           }
+          break;
         }
       }
     }

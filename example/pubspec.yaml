@@ -3,7 +3,7 @@ description: Demonstrates how to use the h264 plugin.
 publish_to: 'none'
 
 dependencies:
-  path_provider: ^2.0.1
+  path_provider: ^2.0.2
   flutter:
     sdk: flutter
 

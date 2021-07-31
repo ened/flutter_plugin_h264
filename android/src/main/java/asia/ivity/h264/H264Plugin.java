@@ -4,19 +4,11 @@ import androidx.annotation.NonNull;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-/**
- * H264Plugin
- */
+/** H264Plugin */
 public class H264Plugin implements FlutterPlugin {
 
   private MethodChannel channel;
-
-  public static void registerWith(Registrar registrar) {
-    H264Plugin instance = new H264Plugin();
-    instance.startListening(registrar.messenger());
-  }
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
