@@ -1,3 +1,8 @@
+## 0.4.0
+
+* Android: Removes support for V1 embedding
+* Android: Use latest AGP toolchain
+
 ## 0.3.0
 
 * Adds null-safety, built the project using Flutter 2.1.0-12.2.pre
