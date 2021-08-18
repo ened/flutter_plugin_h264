@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2 # v2 minimum required
       - uses: axel-op/googlejavaformat-action@v3
         with:
-          args: "--skip-sorting-imports --replace"
+          args: "--skip-sorting-imports"
           # Recommended if you use MacOS:
           # githubToken: ${{ secrets.GITHUB_TOKEN }}
 

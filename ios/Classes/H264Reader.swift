@@ -92,8 +92,8 @@ public class H264Reader: NSObject {
     @objc
     public func convert(target: URL) throws {
         defer {
-            if let s = self.session {
-                VTDecompressionSessionInvalidate(s)
+            if let session = self.session {
+                VTDecompressionSessionInvalidate(session)
                 self.session = nil
             }
         }
@@ -158,7 +158,15 @@ public class H264Reader: NSObject {
             throw H264Errors.osError(status)
         }
 
-        status = VTDecompressionSessionCreate(allocator: kCFAllocatorDefault, formatDescription: formatDescription!, decoderSpecification: nil, imageBufferAttributes: nil, outputCallback: nil, decompressionSessionOut: &session)
+        status = VTDecompressionSessionCreate(
+            allocator: kCFAllocatorDefault,
+            formatDescription: formatDescription!,
+            decoderSpecification: nil,
+            imageBufferAttributes: nil,
+            outputCallback: nil,
+            decompressionSessionOut: &session
+        )
+
         guard status == 0 else {
             print("(VTDecompressionSessionCreate) FAIL: \(status)")
 
@@ -167,7 +175,12 @@ public class H264Reader: NSObject {
 
         var image: UIImage?
 
-        status = VTDecompressionSessionDecodeFrame(session!, sampleBuffer: sampleBuffer[0]!, flags: [._EnableAsynchronousDecompression], infoFlagsOut: nil) { (status, _, buffer, _, _) in
+        status = VTDecompressionSessionDecodeFrame(
+            session!,
+            sampleBuffer: sampleBuffer[0]!,
+            flags: [._EnableAsynchronousDecompression],
+            infoFlagsOut: nil
+        ) { (status, _, buffer, _, _) in
             //                print ("status: \(status)")
             //                print ("a sample: \(buffer)")
 
@@ -216,13 +229,13 @@ public class H264Reader: NSObject {
     }
 
     fileprivate func nextNal(_ frame: [UInt8], offset: Int) -> Int {
-        var i = offset
+        var index = offset
 
-        while i < (frame.count - 3) {
-            if frame[i] == 0x00 && frame[i+1] == 0x00 && frame[i+2] == 0x00 && frame[i+3] == 0x01 {
-                return i
+        while index < (frame.count - 3) {
+            if frame[index] == 0x00 && frame[index+1] == 0x00 && frame[index+2] == 0x00 && frame[index+3] == 0x01 {
+                return index
             } else {
-                i = i + 1
+                index += 1
             }
         }
 
@@ -267,7 +280,7 @@ public class H264Reader: NSObject {
                     idrRange = NSRange(location: index, length: data.bytes.count - index)
                 }
 
-                index = index + 4
+                index += 4
             }
         }
 
