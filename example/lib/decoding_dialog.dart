@@ -28,14 +28,14 @@ class _DecodingDialogState extends State<DecodingDialog> {
 
     final tmpOut = File("${tmp.path}/decoded-${widget.asset.name}.jpg");
 
-    return H264
+    return H264()
         .decodeFrame(
           tmpAsset.path,
           tmpOut.path,
           widget.asset.width,
           widget.asset.height,
         )
-        .then((ignored) => tmpOut.path);
+        .then((_) => tmpOut.path);
   }
 
   @override

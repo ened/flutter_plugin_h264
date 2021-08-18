@@ -29,9 +29,9 @@ class _MyAppState extends State<MyApp> {
             return ListTile(
               title: Text("${a.name}"),
               onTap: () => showDialog(
-                    context: context,
-                    builder: (context) => DecodingDialog(asset: a),
-                  ),
+                context: context,
+                builder: (context) => DecodingDialog(asset: a),
+              ),
             );
           },
           itemCount: _assets.length,
