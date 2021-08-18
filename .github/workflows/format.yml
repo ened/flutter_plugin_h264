@@ -18,6 +18,16 @@ jobs:
         run: |
           flutter format --set-exit-if-changed .
 
+  format_java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2 # v2 minimum required
+      - uses: axel-op/googlejavaformat-action@v3
+        with:
+          args: "--skip-sorting-imports --replace"
+          # Recommended if you use MacOS:
+          # githubToken: ${{ secrets.GITHUB_TOKEN }}
+
   format_kotlin:
     runs-on: ubuntu-latest
 
